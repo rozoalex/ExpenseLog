@@ -97,6 +97,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    public void onActivityResult(){
+
+    }
+
 
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
@@ -274,6 +278,13 @@ public class MainActivity extends AppCompatActivity {
             notes = n;
             setDate();
         }
+
+        private ExpenseLogEntryData(String d, String n,String dt) {
+            descptHeading = d;
+            notes = n;
+            date=dt;
+        }
+
 
         private String getHeading(){
             return descptHeading;
