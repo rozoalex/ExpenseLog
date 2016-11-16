@@ -40,8 +40,7 @@ public class MainActivity extends AppCompatActivity {
     ArrayList<ExpenseLogEntryData> eledList;
     ExpenseTrackerAdapter eta;
     final String saveListKey = "eledListClone";
-    final String titleIntentKey="title";
-    final String notesIntentKey="notes";
+
     DatabaseHelper dbh ;
 
     @Override
@@ -52,56 +51,16 @@ public class MainActivity extends AppCompatActivity {
         dbh = new DatabaseHelper(this);
         myToolbar = (Toolbar) findViewById(R.id.my_toolbar);//find the tool bar
         setSupportActionBar(myToolbar);//set it
-        if(eledList==null){
-            eledList=new ArrayList<>();//initialize the list
-        }
-
+        eledList=new ArrayList<>();//initialize the list
+        //RECOVER FROM DB HERE
         lv=(ListView) findViewById(R.id.expenseListView);//find the list view
         registerForContextMenu(lv);//set the list view a context menu for deleting
-//        Bundle resultData = getIntent().getExtras();//get the extras
-//        if(resultData!=null){//if there is something in the extras ,get them
-//            String t = resultData.getString(titleIntentKey);
-//            String n = resultData.getString(notesIntentKey);
-//            recoverArrayList(resultData.getStringArrayList(saveListKey));//recover the list from intent
-//            Log.i("mylog","add new Expense");
-//            if(t!=null&&n!=null){
-//                addNewExpense(t,n);//add the new item
-//            }
-//        }
         eta = new ExpenseTrackerAdapter();//initialize the adapter
         lv.setAdapter(eta);//set the adapter
 
 
     }
 
-    //recover all info from an arraylist of strings
-    private void recoverArrayList(ArrayList<String> sal) {
-        if(sal==null){return;}
-        Log.i("mylog","recovering...");
-        ExpenseLogEntryData temp = null;
-        int counter = 0;
-        for(String s:sal){
-            switch (counter%3){
-                case 0:
-                    temp=new ExpenseLogEntryData(s);
-                    break;
-                case 1:
-                    temp.setNotes(s);
-                    break;
-                case 2:
-                    temp.setDate(s);
-                    eledList.add(temp);
-                    break;
-            }
-            counter++;
-            Log.i("mylog",String.valueOf(eledList.size()));
-            Log.i("mylog",s);
-        }
-    }
-
-    public void onActivityResult(){
-
-    }
 
 
     @Override
@@ -117,7 +76,13 @@ public class MainActivity extends AppCompatActivity {
 
         switch (item.getItemId()){
             case R.id.deleteOption:
+                Integer deletedRows=dbh.remove(eta.getItemId(i.position));
                 eledList.remove(i.position);
+
+                if(deletedRows > 0){
+                    Log.i("Main","data base data deleted");}
+                else{
+                    Log.w("Main","data base data not deleted");}
                 eta.notifyDataSetChanged();
                 Toast.makeText(getApplicationContext(), "deleted", Toast.LENGTH_LONG).show();
                 return true;
@@ -162,13 +127,7 @@ public class MainActivity extends AppCompatActivity {
         startActivityForResult(i,1);
     }
 
-    /**
-     * Dispatch incoming result to the correct fragment.
-     *
-     * @param requestCode
-     * @param resultCode
-     * @param data
-     */
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(requestCode==1){
@@ -181,33 +140,21 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    //Convert the eledlist to an array list and send through intent
-    private ArrayList<String> saveList() {
-        ArrayList<String> saving=new ArrayList<>();
-        for(ExpenseLogEntryData eled : eledList){
-            saving.add(eled.getHeading());
-            Log.i("mylog","saving....."+eled.getHeading());
-            saving.add(eled.getNotes());
-            saving.add(eled.getDates());
-        }
-        return saving;
-
-    }
-
-
-
-
     private void addNewExpense(String des, String notes) {
-        eledList.add(new ExpenseLogEntryData(des,notes));
+        long id = dbh.insert(des,notes,setDate());
+        eledList.add(new ExpenseLogEntryData(des,notes,id));
         //eta.notifyDataSetChanged();
     }
 
     private void addNewExpense(String des, String notes,String date){
-        eledList.add(new ExpenseLogEntryData(des,notes,date));
+        long id = dbh.insert(des,notes,date);
+        eledList.add(new ExpenseLogEntryData(des,notes,date,id));
+
     }
 
-
-
+    public String setDate(){
+        return new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(new Date());
+    }
 
 
     /*
@@ -244,7 +191,7 @@ public class MainActivity extends AppCompatActivity {
         //return its argument, index.
         //what ???
         public long getItemId(int position) {
-            return position;
+            return eledList.get(position).getID();
         }
 
         @Override
@@ -282,24 +229,34 @@ public class MainActivity extends AppCompatActivity {
         private String descptHeading;
         private String notes;
         private String date;
+        private long ID;
 
         private ExpenseLogEntryData(String d) {
             descptHeading=d;
         }
 
 
-        private ExpenseLogEntryData(String d, String n) {
+        private ExpenseLogEntryData(String d, String n,long id) {
             descptHeading = d;
             notes = n;
+            ID=id;
             setDate();
         }
 
-        private ExpenseLogEntryData(String d, String n,String dt) {
+        public void setDate(){
+            date = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(new Date());
+        }
+
+        private ExpenseLogEntryData(String d, String n,String dt,long id) {
+            ID = id;
             descptHeading = d;
             notes = n;
             date=dt;
         }
 
+        private long getID(){
+            return ID;
+        }
 
         private String getHeading(){
             return descptHeading;
@@ -321,9 +278,7 @@ public class MainActivity extends AppCompatActivity {
             notes=inp;
         }
 
-        private void setDate(){
-            date=new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(new Date());
-        }
+
 
         private void setDate(String d){
             date=d;

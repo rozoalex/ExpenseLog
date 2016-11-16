@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 /**
  * Created by rozoa on 11/15/2016.
@@ -33,7 +34,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
      */
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL("create table "+TABLE_NAME+" (ID INTEGER PRIMARY KEY AUTOINCREMENT,TITLE TEXT,NOTES TEXT,DATE TEXT");
+        db.execSQL("create table "+TABLE_NAME+" (ID INTEGER PRIMARY KEY AUTOINCREMENT,TITLE TEXT ,NOTES TEXT,DATE TEXT)");
     }
 
     /**
@@ -62,14 +63,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         onCreate(db);
     }
 
-    public boolean insert(String title,String notes,String date ){
+    public long insert(String title,String notes,String date ){
         SQLiteDatabase db = this.getReadableDatabase();
         ContentValues cv = new ContentValues();
         cv.put(COL_2,title);
         cv.put(COL_3,notes);
         cv.put(COL_4,date);
+
         long result = db.insert(TABLE_NAME,null, cv);
-        return (result!=-1);
+        Log.i("DatabaseHelper","insert: "+title+"\nResult: "+String.valueOf(result));
+        return result;
     }
 
 
@@ -79,9 +82,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return res;
     }
 
-    public boolean remove(String id){
-        //
-        return false;
+    public Integer remove(long id){
+        SQLiteDatabase db = this.getWritableDatabase();
+        return db.delete(TABLE_NAME,"ID = ?",new String[]{String.valueOf(id)});
     }
 
 
