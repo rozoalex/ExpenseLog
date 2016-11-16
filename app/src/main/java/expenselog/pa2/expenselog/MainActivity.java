@@ -42,12 +42,14 @@ public class MainActivity extends AppCompatActivity {
     final String saveListKey = "eledListClone";
     final String titleIntentKey="title";
     final String notesIntentKey="notes";
-
+    DatabaseHelper dbh ;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
+
+        dbh = new DatabaseHelper(this);
         myToolbar = (Toolbar) findViewById(R.id.my_toolbar);//find the tool bar
         setSupportActionBar(myToolbar);//set it
         if(eledList==null){
@@ -56,16 +58,16 @@ public class MainActivity extends AppCompatActivity {
 
         lv=(ListView) findViewById(R.id.expenseListView);//find the list view
         registerForContextMenu(lv);//set the list view a context menu for deleting
-        Bundle resultData = getIntent().getExtras();//get the extras
-        if(resultData!=null){//if there is something in the extras ,get them
-            String t = resultData.getString(titleIntentKey);
-            String n = resultData.getString(notesIntentKey);
-            recoverArrayList(resultData.getStringArrayList(saveListKey));//recover the list from intent
-            Log.i("mylog","add new Expense");
-            if(t!=null&&n!=null){
-                addNewExpense(t,n);//add the new item
-            }
-        }
+//        Bundle resultData = getIntent().getExtras();//get the extras
+//        if(resultData!=null){//if there is something in the extras ,get them
+//            String t = resultData.getString(titleIntentKey);
+//            String n = resultData.getString(notesIntentKey);
+//            recoverArrayList(resultData.getStringArrayList(saveListKey));//recover the list from intent
+//            Log.i("mylog","add new Expense");
+//            if(t!=null&&n!=null){
+//                addNewExpense(t,n);//add the new item
+//            }
+//        }
         eta = new ExpenseTrackerAdapter();//initialize the adapter
         lv.setAdapter(eta);//set the adapter
 
@@ -127,17 +129,7 @@ public class MainActivity extends AppCompatActivity {
         return super.onContextItemSelected(item);
     }
 
-    /**
-     * Dispatch incoming result to the correct fragment.
-     *
-     * @param requestCode
-     * @param resultCode
-     * @param data
-     */
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-    }
+
 
     @Override
         public boolean onCreateOptionsMenu(Menu menu) {
@@ -166,8 +158,27 @@ public class MainActivity extends AppCompatActivity {
 
     private void askNewExpense() {
         Intent i=new Intent(this, askNewExpense.class);
-        i.putExtra(saveListKey,saveList());//Convert the eledlist to an array list and send through intent
-        startActivity(i);
+        //i.putExtra(saveListKey,saveList());//Convert the eledlist to an array list and send through intent
+        startActivityForResult(i,1);
+    }
+
+    /**
+     * Dispatch incoming result to the correct fragment.
+     *
+     * @param requestCode
+     * @param resultCode
+     * @param data
+     */
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if(requestCode==1){
+            if(resultCode== RESULT_OK){
+                ArrayList<String> results = data.getStringArrayListExtra("results");
+                addNewExpense(results.get(0),results.get(1));
+                eta.notifyDataSetChanged();
+            }
+        }
+
     }
 
     //Convert the eledlist to an array list and send through intent
@@ -188,8 +199,12 @@ public class MainActivity extends AppCompatActivity {
 
     private void addNewExpense(String des, String notes) {
         eledList.add(new ExpenseLogEntryData(des,notes));
+        //eta.notifyDataSetChanged();
     }
 
+    private void addNewExpense(String des, String notes,String date){
+        eledList.add(new ExpenseLogEntryData(des,notes,date));
+    }
 
 
 

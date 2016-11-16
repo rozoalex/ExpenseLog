@@ -1,13 +1,17 @@
 package expenselog.pa2.expenselog;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import java.util.ArrayList;
 
 
 //
@@ -15,7 +19,8 @@ import android.widget.Toast;
 public class askNewExpense extends AppCompatActivity {
 
     final String saveListKey = "eledListClone";
-
+    Intent switchtoMain;
+    ArrayList<String> results;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,27 +31,36 @@ public class askNewExpense extends AppCompatActivity {
         final EditText notes = (EditText)findViewById(R.id.editText5);
         Button ok = (Button)findViewById(R.id.okButton);
         Button no = (Button)findViewById(R.id.button2);
-        final Intent switchtoMain = new Intent(this, MainActivity.class);
+        results=new ArrayList<>();
 
         ok.setOnClickListener(
                 new Button.OnClickListener(){
                     public void onClick(View v){
                         if(title==null ){
+                            Log.wtf("askNewExpense","wtf?! title is null?");
                             return;
                         }
                         if(!title.getText().toString().trim().isEmpty()){
-                            switchtoMain.putExtra("title",title.getText().toString());
+                            results.add(title.getText().toString());
+                            //switchtoMain.putExtra("title",title.getText().toString());
                             if(notes==null){
-                                switchtoMain.putExtra("notes","");
+                                results.add("");
+                                //switchtoMain.putExtra("notes","");
                             }else{
-                                switchtoMain.putExtra("notes",notes.getText().toString());
+                                results.add(notes.getText().toString());
+                                //switchtoMain.putExtra("notes",notes.getText().toString());
                             }
                             Toast.makeText(getApplicationContext(), "New expense:\n"+title.getText(), Toast.LENGTH_SHORT).show();
                         }else {
-                            Toast.makeText(getApplicationContext(), "Empty expense", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getApplicationContext(), "Sorry, there has to be a title.", Toast.LENGTH_SHORT).show();
+                            cancelResult();
                         }
-                        switchtoMain.putExtra(saveListKey,getIntent().getExtras().getStringArrayList(saveListKey));
-                        startActivity(switchtoMain);
+                        //switchtoMain.putExtra(saveListKey,getIntent().getExtras().getStringArrayList(saveListKey));
+                        //startActivity(switchtoMain);
+                        switchtoMain=new Intent();
+                        switchtoMain.putExtra("results",results);
+                        setResult(Activity.RESULT_OK,switchtoMain);
+                        finish();
                     }
                 }
         );
@@ -56,12 +70,19 @@ public class askNewExpense extends AppCompatActivity {
                     @Override
                     public void onClick(View v) {
                         Toast.makeText(getApplicationContext(), "cancelled", Toast.LENGTH_SHORT).show();
-                        switchtoMain.putExtra(saveListKey,getIntent().getExtras().getStringArrayList(saveListKey));
-                        startActivity(switchtoMain);
+                        cancelResult();
+                        //switchtoMain.putExtra(saveListKey,getIntent().getExtras().getStringArrayList(saveListKey));
+                        //startActivity(switchtoMain);
                     }
                 }
         );
 
 
+    }
+
+    private void cancelResult(){
+        switchtoMain=new Intent();
+        setResult(Activity.RESULT_CANCELED,switchtoMain);
+        finish();
     }
 }
