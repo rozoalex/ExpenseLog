@@ -15,7 +15,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public static final String DATABASE_NAME="Logs.db";
     public static final String TABLE_NAME="logs_table";
-    public static final String COL_1="ID";
+    public static final String COL_1="_id";
     public static final String COL_2="TITLE";
     public static final String COL_3="NOTES";
     public static final String COL_4="DATE";
@@ -65,6 +65,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     }
 
+    public long edit(long id,String title,String notes,String date){
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues cv = new ContentValues();
+        cv.put(COL_1,String.valueOf(id));
+        cv.put(COL_2,title);
+        cv.put(COL_3,notes);
+        cv.put(COL_4,date);
+        return db.update(TABLE_NAME,cv,"_id = ?",new String[]{String.valueOf(id)});
+    }
 
     public Integer remove(long id){
         SQLiteDatabase db = this.getWritableDatabase();

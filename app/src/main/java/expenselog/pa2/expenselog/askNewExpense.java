@@ -21,17 +21,26 @@ public class askNewExpense extends AppCompatActivity {
     final String saveListKey = "eledListClone";
     Intent switchtoMain;
     ArrayList<String> results;
+    long id;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.expense_add);
-
+        id = -1;
         final EditText title = (EditText)findViewById(R.id.titleEditText);
         final EditText notes = (EditText)findViewById(R.id.editText5);
         Button ok = (Button)findViewById(R.id.okButton);
         Button no = (Button)findViewById(R.id.button2);
         results=new ArrayList<>();
+        try {
+            setText(title, notes);
+            Log.i("askNewExpense","edit");
+        }catch (Exception e){
+            Log.i("askNewExpense","not edit");
+        }
+
+
 
         ok.setOnClickListener(
                 new Button.OnClickListener(){
@@ -50,7 +59,11 @@ public class askNewExpense extends AppCompatActivity {
                                 results.add(notes.getText().toString());
                                 //switchtoMain.putExtra("notes",notes.getText().toString());
                             }
-                            Toast.makeText(getApplicationContext(), "New expense:\n"+title.getText(), Toast.LENGTH_SHORT).show();
+                            if(id==-1) {
+                                Toast.makeText(getApplicationContext(), "New item:\n" + title.getText(), Toast.LENGTH_SHORT).show();
+                            }else{
+                                Toast.makeText(getApplicationContext(), "Edit :\n" + title.getText(), Toast.LENGTH_SHORT).show();
+                            }
                         }else {
                             Toast.makeText(getApplicationContext(), "Sorry, there has to be a title.", Toast.LENGTH_SHORT).show();
                             cancelResult();
@@ -59,6 +72,7 @@ public class askNewExpense extends AppCompatActivity {
                         //startActivity(switchtoMain);
                         switchtoMain=new Intent();
                         switchtoMain.putExtra("results",results);
+                        switchtoMain.putExtra("id",id);
                         setResult(Activity.RESULT_OK,switchtoMain);
                         finish();
                     }
@@ -77,6 +91,20 @@ public class askNewExpense extends AppCompatActivity {
                 }
         );
 
+
+    }
+
+    private void setText(EditText title,final EditText notes) throws NullPointerException{
+        Intent i = getIntent();//if there is something in the intent, it means the Main starts this for editing
+        String titleString = i.getExtras().getString("title");
+            if (titleString != null) {
+                title.setText(titleString);
+                String notesString = i.getExtras().getString("notes");
+                if (notesString != null) {
+                    notes.setText(notesString);
+                }
+                id = i.getExtras().getLong("id");
+            }
 
     }
 

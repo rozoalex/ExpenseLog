@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Expense Log</string>
+    <string name="app_name">Logs</string>
     <string name="add">add</string>
     <string name="addText">add</string>
     <string name="contact_me">contact me</string>

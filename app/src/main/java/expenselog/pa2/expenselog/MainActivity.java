@@ -16,6 +16,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.CursorAdapter;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
@@ -58,11 +59,8 @@ public class MainActivity extends AppCompatActivity {
         checkIfFirstTime();
         myToolbar = (Toolbar) findViewById(R.id.my_toolbar);//find the tool bar
         setSupportActionBar(myToolbar);//set it
-        //eledList=new ArrayList<>();//initialize the list
-        //RECOVER FROM DB HERE
         lv=(ListView) findViewById(R.id.expenseListView);//find the list view
         registerForContextMenu(lv);//set the list view a context menu for deleting
-        //eta = new ExpenseTrackerAdapter();//initialize the adapter
         cursor=dbh.getAll();
         sca = new SimpleCursorAdapter(this,
                 R.layout.expense_entry,
@@ -70,7 +68,6 @@ public class MainActivity extends AppCompatActivity {
                 new String[]{"TITLE","NOTES","DATE"},
                 new int[]{R.id.disccc,R.id.notes,R.id.datetime},
                 CursorAdapter.FLAG_REGISTER_CONTENT_OBSERVER);
-        //lv.setAdapter(eta);//set the adapter
         lv.setAdapter(sca);//use simple adapter
 
     }
@@ -112,8 +109,21 @@ public class MainActivity extends AppCompatActivity {
                 setListView();
                 Toast.makeText(getApplicationContext(), "deleted", Toast.LENGTH_LONG).show();
                 return true;
-            case R.id.edit: Toast.makeText(getApplicationContext(), "Not implemented yet...", Toast.LENGTH_SHORT).show();
-
+            case R.id.edit:
+                Intent it=new Intent(this, askNewExpense.class);
+                LinearLayout ll = (LinearLayout) i.targetView;
+                int count = ll.getChildCount();
+                for(int iii=0;iii<count;iii++){
+                    if(iii==0){
+                        TextView v = (TextView) ll.getChildAt(iii);
+                        it.putExtra("title",v.getText());
+                    }else if(iii==1){
+                        TextView v = (TextView) ll.getChildAt(iii);
+                        it.putExtra("notes",v.getText());
+                    }
+                }
+                it.putExtra("id",i.id);
+                startActivityForResult(it,2);
                 break;
         }
 
@@ -149,7 +159,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void askNewExpense() {
         Intent i=new Intent(this, askNewExpense.class);
-        //i.putExtra(saveListKey,saveList());//Convert the eledlist to an array list and send through intent
         startActivityForResult(i,1);
     }
 
@@ -160,7 +169,13 @@ public class MainActivity extends AppCompatActivity {
             if(resultCode== RESULT_OK){
                 ArrayList<String> results = data.getStringArrayListExtra("results");
                 addNewExpense(results.get(0),results.get(1));
-                //Log.i("Main","onActivityResult");
+                setListView();
+            }
+        }else if(requestCode==2){
+            if(resultCode== RESULT_OK){
+                ArrayList<String> results = data.getStringArrayListExtra("results");
+                Long id =data.getExtras().getLong("id");
+                Long editResult = dbh.edit(id,results.get(0),results.get(1),setDate());
                 setListView();
             }
         }
