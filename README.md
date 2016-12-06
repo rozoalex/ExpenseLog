@@ -11,7 +11,6 @@ either delete or edit. Click ,up right corner to add a new item.
 
 It is kept to a minimalist design, with only black and white.
 
-You are welcome to play it however you want. Hope you like this app. :)
 
 
 
